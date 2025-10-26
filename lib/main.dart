@@ -9,6 +9,8 @@ import 'home/home_page.dart';
 
 //i am sandaru
 //NO excuses in professional life just do it
+//give priority to what you stress !!
+//i am a member of team 3idiots.
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const MediReminderApp());
