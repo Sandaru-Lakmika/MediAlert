@@ -6,8 +6,10 @@ import 'features/welcome/birth_date_page.dart';
 import 'features/welcome/goals_page.dart';
 import 'features/medicine/add_medicine_page.dart';
 import 'home/home_page.dart';
+
 //i am sandaru
 //NO excuses in professional life just do it
+//give priority to what you stress !!
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const MediReminderApp());
