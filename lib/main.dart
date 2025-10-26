@@ -10,6 +10,7 @@ import 'home/home_page.dart';
 //NO excuses in professional life just do it
 //i am a member of team 3idiots.
 //sample test 
+//test 1
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const MediReminderApp());
