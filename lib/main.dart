@@ -7,6 +7,7 @@ import 'features/welcome/goals_page.dart';
 import 'features/medicine/add_medicine_page.dart';
 import 'home/home_page.dart';
 //i am sandaru
+//NO excuses in professional life just do it
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const MediReminderApp());
