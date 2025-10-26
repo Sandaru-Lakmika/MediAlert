@@ -11,6 +11,7 @@ import 'home/home_page.dart';
 //NO excuses in professional life just do it
 //give priority to what you stress !!
 //i am a member of team 3idiots.
+//sample test 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const MediReminderApp());
