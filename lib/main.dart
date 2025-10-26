@@ -6,7 +6,7 @@ import 'features/welcome/birth_date_page.dart';
 import 'features/welcome/goals_page.dart';
 import 'features/medicine/add_medicine_page.dart';
 import 'home/home_page.dart';
-
+//i am sandaru
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const MediReminderApp());
