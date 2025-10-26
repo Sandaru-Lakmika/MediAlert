@@ -13,8 +13,7 @@ import 'home/home_page.dart';
 //i am a member of team 3idiots.
 //sample test 
 //test 1
-//sample test 2
-///sample 33
+//test 2
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const MediReminderApp());
