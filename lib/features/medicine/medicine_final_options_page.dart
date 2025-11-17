@@ -49,17 +49,23 @@ class _MedicineFinalOptionsPageState extends State<MedicineFinalOptionsPage> {
 
   void _handleSave() {
     // TODO: Save medicine data
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${widget.medicineName} saved successfully!'),
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
-
-    // Navigate back to home
-    Navigator.of(context).popUntil((route) => route.isFirst);
+    
+    // Navigate back to home page
+    Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
+    
+    // Show success message after navigation
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${widget.medicineName} added successfully!'),
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
+    });
   }
 
   @override
