@@ -54,48 +54,56 @@ class _MedicineDosagePageState extends State<MedicineDosagePage> {
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
-      backgroundColor: cs.primary,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Custom App Bar
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(12),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              cs.primaryContainer.withOpacity(0.3),
+              cs.primary.withOpacity(0.15),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Custom App Bar
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: cs.primary.withOpacity(0.1),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: IconButton(
+                        icon: Icon(Icons.arrow_back, color: cs.primary),
+                        onPressed: () => Navigator.pop(context),
+                      ),
                     ),
-                    child: IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.white),
-                      onPressed: () => Navigator.pop(context),
+                    Text(
+                      widget.medicineName,
+                      style: textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: cs.onSurface,
+                      ),
                     ),
-                  ),
-                  Text(
-                    widget.medicineName,
-                    style: textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(width: 40), // Balance the row
-                ],
-              ),
-            ),
-
-            Expanded(
-              child: Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: cs.primary,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(32),
-                    topRight: Radius.circular(32),
-                  ),
+                    const SizedBox(width: 40), // Balance the row
+                  ],
                 ),
+              ),
+
+              Expanded(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.all(24),
                   child: Column(
@@ -108,13 +116,24 @@ class _MedicineDosagePageState extends State<MedicineDosagePage> {
                         child: Container(
                           padding: const EdgeInsets.all(24),
                           decoration: BoxDecoration(
-                            color: cs.primary.withOpacity(0.1),
-                            shape: BoxShape.circle,
+                            gradient: LinearGradient(
+                              colors: [cs.primary, cs.primary.withOpacity(0.8)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: [
+                              BoxShadow(
+                                color: cs.primary.withOpacity(0.3),
+                                blurRadius: 20,
+                                offset: const Offset(0, 8),
+                              ),
+                            ],
                           ),
-                          child: Icon(
+                          child: const Icon(
                             Icons.medication_outlined,
                             size: 56,
-                            color: cs.primary,
+                            color: Colors.white,
                           ),
                         ),
                       ),
@@ -126,7 +145,7 @@ class _MedicineDosagePageState extends State<MedicineDosagePage> {
                         "How much / many do you take?",
                         style: textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: cs.onSurface,
                           height: 1.2,
                         ),
                         textAlign: TextAlign.start,
@@ -137,8 +156,8 @@ class _MedicineDosagePageState extends State<MedicineDosagePage> {
                       // Subtitle
                       Text(
                         "Set the default dose. You can adjust it\nlater for each reminder time.",
-                        style: textTheme.bodyLarge?.copyWith(
-                          color: Colors.white70,
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: cs.onSurface.withOpacity(0.7),
                           height: 1.4,
                         ),
                       ),
@@ -229,7 +248,7 @@ class _MedicineDosagePageState extends State<MedicineDosagePage> {
                         ),
                       ),
 
-                      const SizedBox(height: 80),
+                      const SizedBox(height: 60),
 
                       // Set Button
                       Container(
@@ -267,8 +286,8 @@ class _MedicineDosagePageState extends State<MedicineDosagePage> {
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
