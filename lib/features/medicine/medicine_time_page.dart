@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'medicine_dosage_page.dart';
+import 'medicine_final_options_page.dart';
 
 class MedicineTimePage extends StatefulWidget {
   final String medicineName;
@@ -38,26 +39,20 @@ class _MedicineTimePageState extends State<MedicineTimePage> {
       return;
     }
 
-    // Navigate to dosage page
-    final result = await Navigator.push<int>(
+    // Navigate to final options page
+    Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => MedicineDosagePage(
+        builder: (context) => MedicineFinalOptionsPage(
           medicineName: widget.medicineName,
           medicineForm: widget.medicineForm,
           frequency: widget.frequency,
           dailyFrequency: widget.dailyFrequency,
           time: _selectedTime!,
+          dosage: _dosageAmount,
         ),
       ),
     );
-
-    // Update dosage if returned from dosage page
-    if (result != null) {
-      setState(() {
-        _dosageAmount = result;
-      });
-    }
   }
 
   void _selectTime(TimeOfDay time) {
