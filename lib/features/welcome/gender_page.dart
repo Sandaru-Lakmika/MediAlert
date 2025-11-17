@@ -142,6 +142,15 @@ class _GenderPageState extends State<GenderPage> {
                         iconColor: const Color(0xFF2196F3),
                       ),
 
+                      const SizedBox(height: 16),
+
+                      // Non-binary Option
+                      _buildGenderOption(
+                        gender: 'Non-binary',
+                        icon: Icons.transgender,
+                        iconColor: const Color(0xFF9C27B0),
+                      ),
+
                       const SizedBox(height: 60),
 
                       // Next Button
