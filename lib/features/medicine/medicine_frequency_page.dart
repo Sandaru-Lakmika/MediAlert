@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'medicine_daily_frequency_page.dart';
 
 class MedicineFrequencyPage extends StatefulWidget {
   final String medicineName;
@@ -498,13 +499,15 @@ class _MedicineFrequencyPageState extends State<MedicineFrequencyPage> {
       return;
     }
 
-    // TODO: Navigate to next page
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Frequency: $_selectedFrequency selected'),
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    // Navigate to daily frequency page
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MedicineDailyFrequencyPage(
+          medicineName: widget.medicineName,
+          medicineForm: widget.medicineForm,
+          frequency: _selectedFrequency!,
+        ),
       ),
     );
   }
