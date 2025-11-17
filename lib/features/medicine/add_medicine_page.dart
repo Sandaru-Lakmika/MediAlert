@@ -295,7 +295,7 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                           children: [
                             _buildQuickSelectChip('Paracetamol'),
                             _buildQuickSelectChip('Aspirin'),
-                            _buildQuickSelectChip('Ibuprofen'),
+                            _buildQuickSelectChip('Piriton'),
                             _buildQuickSelectChip('Amoxicillin'),
                             _buildQuickSelectChip('Metformin'),
                             _buildQuickSelectChip('Omeprazole'),
