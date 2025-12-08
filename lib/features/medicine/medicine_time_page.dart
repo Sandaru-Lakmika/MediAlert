@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'medicine_dosage_page.dart';
 import 'medicine_final_options_page.dart';
+import '../../models/medicine.dart';
 
 class MedicineTimePage extends StatefulWidget {
   final String medicineName;
   final String medicineForm;
   final String frequency;
   final String dailyFrequency;
+  final Medicine? existingMedicine;
 
   const MedicineTimePage({
     super.key,
@@ -14,6 +16,7 @@ class MedicineTimePage extends StatefulWidget {
     required this.medicineForm,
     required this.frequency,
     required this.dailyFrequency,
+    this.existingMedicine,
   });
 
   @override
@@ -50,6 +53,7 @@ class _MedicineTimePageState extends State<MedicineTimePage> {
           dailyFrequency: widget.dailyFrequency,
           time: _selectedTime!,
           dosage: _dosageAmount,
+          existingMedicine: widget.existingMedicine,
         ),
       ),
     );
@@ -199,13 +203,15 @@ class _MedicineTimePageState extends State<MedicineTimePage> {
                                     final result = await Navigator.push<int>(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) => MedicineDosagePage(
-                                          medicineName: widget.medicineName,
-                                          medicineForm: widget.medicineForm,
-                                          frequency: widget.frequency,
-                                          dailyFrequency: widget.dailyFrequency,
-                                          time: _selectedTime!,
-                                        ),
+                                        builder: (context) =>
+                                            MedicineDosagePage(
+                                              medicineName: widget.medicineName,
+                                              medicineForm: widget.medicineForm,
+                                              frequency: widget.frequency,
+                                              dailyFrequency:
+                                                  widget.dailyFrequency,
+                                              time: _selectedTime!,
+                                            ),
                                       ),
                                     );
                                     if (result != null) {
@@ -227,10 +233,11 @@ class _MedicineTimePageState extends State<MedicineTimePage> {
                                       children: [
                                         Text(
                                           '$_dosageAmount Pill(s)',
-                                          style: textTheme.titleMedium?.copyWith(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                          ),
+                                          style: textTheme.titleMedium
+                                              ?.copyWith(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                              ),
                                         ),
                                         const SizedBox(width: 8),
                                         Icon(
@@ -345,9 +352,7 @@ class _MedicineTimePageState extends State<MedicineTimePage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildTimeUnit(
-                _selectedTime!.hour.toString().padLeft(2, '0'),
-              ),
+              _buildTimeUnit(_selectedTime!.hour.toString().padLeft(2, '0')),
               Text(
                 ':',
                 style: textTheme.displayLarge?.copyWith(
@@ -355,9 +360,7 @@ class _MedicineTimePageState extends State<MedicineTimePage> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              _buildTimeUnit(
-                _selectedTime!.minute.toString().padLeft(2, '0'),
-              ),
+              _buildTimeUnit(_selectedTime!.minute.toString().padLeft(2, '0')),
             ],
           ),
         ],
@@ -375,10 +378,7 @@ class _MedicineTimePageState extends State<MedicineTimePage> {
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-          width: 1,
-        ),
+        border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
       ),
       child: Text(
         value,

@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'medicine_daily_frequency_page.dart';
+import '../../models/medicine.dart';
 
 class MedicineFrequencyPage extends StatefulWidget {
   final String medicineName;
   final String medicineForm;
+  final Medicine? existingMedicine;
 
   const MedicineFrequencyPage({
     super.key,
     required this.medicineName,
     required this.medicineForm,
+    this.existingMedicine,
   });
 
   @override
@@ -507,6 +510,7 @@ class _MedicineFrequencyPageState extends State<MedicineFrequencyPage> {
           medicineName: widget.medicineName,
           medicineForm: widget.medicineForm,
           frequency: _selectedFrequency!,
+          existingMedicine: widget.existingMedicine,
         ),
       ),
     );

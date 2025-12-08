@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../models/medicine.dart';
+import '../../services/medicine_service.dart';
 
 class MedicineFinalOptionsPage extends StatefulWidget {
   final String medicineName;
@@ -7,6 +9,7 @@ class MedicineFinalOptionsPage extends StatefulWidget {
   final String dailyFrequency;
   final TimeOfDay time;
   final int dosage;
+  final Medicine? existingMedicine;
 
   const MedicineFinalOptionsPage({
     super.key,
@@ -16,6 +19,7 @@ class MedicineFinalOptionsPage extends StatefulWidget {
     required this.dailyFrequency,
     required this.time,
     required this.dosage,
+    this.existingMedicine,
   });
 
   @override
@@ -28,40 +32,63 @@ class _MedicineFinalOptionsPageState extends State<MedicineFinalOptionsPage> {
     {
       'title': 'Set treatment duration?',
       'icon': Icons.event_outlined,
-      'selected': false
+      'selected': false,
     },
     {
       'title': 'Get refill reminders?',
       'icon': Icons.notifications_active_outlined,
-      'selected': false
+      'selected': false,
     },
     {
       'title': 'Add instructions?',
       'icon': Icons.info_outline,
-      'selected': false
+      'selected': false,
     },
     {
       'title': 'Change the med icon?',
       'icon': Icons.edit_outlined,
-      'selected': false
+      'selected': false,
     },
   ];
 
-  void _handleSave() {
-    // TODO: Save medicine data
-    
+  Future<void> _handleSave() async {
+    // Create medicine object (use existing ID if editing, otherwise create new)
+    final isEditing = widget.existingMedicine != null;
+    final medicine = Medicine(
+      id: isEditing
+          ? widget.existingMedicine!.id
+          : DateTime.now().millisecondsSinceEpoch.toString(),
+      name: widget.medicineName,
+      form: widget.medicineForm,
+      frequency: widget.frequency,
+      dailyFrequency: widget.dailyFrequency,
+      time: widget.time,
+      dosage: widget.dosage,
+      createdAt: isEditing
+          ? widget.existingMedicine!.createdAt
+          : DateTime.now(),
+    );
+
+    // Save medicine data
+    await MedicineService.saveMedicine(medicine);
+
     // Navigate back to home page
+    if (!mounted) return;
     Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
-    
+
     // Show success message after navigation
     Future.delayed(const Duration(milliseconds: 300), () {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${widget.medicineName} added successfully!'),
+            content: Text(
+              '${widget.medicineName} ${isEditing ? "updated" : "added"} successfully!',
+            ),
             backgroundColor: Theme.of(context).colorScheme.primary,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
       }
@@ -275,10 +302,7 @@ class _MedicineFinalOptionsPageState extends State<MedicineFinalOptionsPage> {
     );
   }
 
-  Widget _buildOptionItem({
-    required String title,
-    required IconData icon,
-  }) {
+  Widget _buildOptionItem({required String title, required IconData icon}) {
     final cs = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
@@ -304,11 +328,7 @@ class _MedicineFinalOptionsPageState extends State<MedicineFinalOptionsPage> {
                 color: cs.primary.withOpacity(0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(
-                icon,
-                color: cs.primary,
-                size: 24,
-              ),
+              child: Icon(icon, color: cs.primary, size: 24),
             ),
             const SizedBox(width: 16),
             Expanded(
