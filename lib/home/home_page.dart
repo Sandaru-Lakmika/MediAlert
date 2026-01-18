@@ -4,6 +4,7 @@ import '../models/medicine.dart';
 import '../services/medicine_service.dart';
 import '../services/activity_service.dart';
 import '../services/progress_notifier.dart';
+import '../services/notification_service.dart';
 import '../features/progress/progress_page.dart';
 import '../features/settings/settings_page.dart';
 import '../features/medicine_stock/medicine_stock_page.dart';
@@ -15,7 +16,7 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   final userData = UserData();
   int _selectedIndex = 0;
   List<Medicine> _medicines = [];
@@ -24,7 +25,63 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadMedicines();
+    _checkMissedDoses();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Check for missed doses when app comes to foreground
+      _checkMissedDoses();
+      _loadMedicines();
+    }
+  }
+
+  Future<void> _checkMissedDoses() async {
+    final medicines = await MedicineService.getMedicines();
+    final now = DateTime.now();
+
+    for (final medicine in medicines) {
+      final scheduledTime = DateTime(
+        now.year,
+        now.month,
+        now.day,
+        medicine.time.hour,
+        medicine.time.minute,
+      );
+
+      // Check if scheduled time has passed
+      if (scheduledTime.isBefore(now)) {
+        final isTaken = await _isMedicineTakenToday(medicine.name);
+        final activities = await ActivityService.getTodayActivities();
+        final isMissed = activities.any(
+          (activity) =>
+              activity.medicineName == medicine.name &&
+              activity.action == 'missed',
+        );
+
+        // If not taken and not already marked as missed, mark as missed
+        if (!isTaken && !isMissed) {
+          final activity = MedicineActivity(
+            id: '${medicine.id}_missed_${DateTime.now().millisecondsSinceEpoch}',
+            medicineName: medicine.name,
+            medicineForm: medicine.form,
+            action: 'missed',
+            timestamp: scheduledTime,
+          );
+          await ActivityService.recordActivity(activity);
+          ProgressNotifier().notifyProgressUpdate();
+        }
+      }
+    }
   }
 
   Future<void> _loadMedicines() async {
@@ -33,6 +90,9 @@ class _HomePageState extends State<HomePage> {
       _medicines = medicines;
       _isLoading = false;
     });
+
+    // Reschedule all notifications
+    await NotificationService().scheduleAllMedicineNotifications(medicines);
   }
 
   void _onItemTapped(int index) {
