@@ -6,15 +6,16 @@ import 'features/welcome/birth_date_page.dart';
 import 'features/welcome/goals_page.dart';
 import 'features/medicine/add_medicine_page.dart';
 import 'home/home_page.dart';
+import 'models/medicine.dart';
 
 //i am sandaru
 //NO excuses in professional life just do it
 //give priority to what you stress !!
 //i am a member of team 3idiots.
-//sample test 
+//sample test
 //test 1
 //test 2
-//test 3 
+//test 3
 //test 4
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -47,6 +48,15 @@ class MediReminderApp extends StatelessWidget {
         ),
         fontFamily: 'Roboto',
       ),
+      onGenerateRoute: (settings) {
+        if (settings.name == '/add-medicine') {
+          final medicine = settings.arguments as Medicine?;
+          return MaterialPageRoute(
+            builder: (_) => AddMedicinePage(existingMedicine: medicine),
+          );
+        }
+        return null;
+      },
       routes: {
         '/': (_) => const WelcomePage(),
         '/home': (_) => const HomePage(),
@@ -54,7 +64,6 @@ class MediReminderApp extends StatelessWidget {
         '/gender': (_) => const GenderPage(),
         '/birth-date': (_) => const BirthDatePage(),
         '/goals': (_) => const GoalsPage(),
-        '/add-medicine': (_) => const AddMedicinePage(),
       },
     );
   }

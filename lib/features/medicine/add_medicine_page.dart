@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'medicine_form_page.dart';
+import '../../models/medicine.dart';
 
 class AddMedicinePage extends StatefulWidget {
-  const AddMedicinePage({super.key});
+  final Medicine? existingMedicine;
+
+  const AddMedicinePage({super.key, this.existingMedicine});
 
   @override
   State<AddMedicinePage> createState() => _AddMedicinePageState();
@@ -11,6 +14,14 @@ class AddMedicinePage extends StatefulWidget {
 class _AddMedicinePageState extends State<AddMedicinePage> {
   final _medicineNameController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.existingMedicine != null) {
+      _medicineNameController.text = widget.existingMedicine!.name;
+    }
+  }
 
   @override
   void dispose() {
@@ -25,7 +36,10 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => MedicineFormPage(medicineName: medicineName),
+          builder: (context) => MedicineFormPage(
+            medicineName: medicineName,
+            existingMedicine: widget.existingMedicine,
+          ),
         ),
       );
     }
@@ -121,7 +135,9 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
 
                         // Title
                         Text(
-                          "What med would you like to add?",
+                          widget.existingMedicine != null
+                              ? "Edit your medication"
+                              : "What med would you like to add?",
                           style: textTheme.headlineSmall?.copyWith(
                             fontWeight: FontWeight.bold,
                             color: cs.onSurface,

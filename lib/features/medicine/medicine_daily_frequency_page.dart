@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 import 'medicine_time_page.dart';
+import '../../models/medicine.dart';
 
 class MedicineDailyFrequencyPage extends StatefulWidget {
   final String medicineName;
   final String medicineForm;
   final String frequency;
+  final Medicine? existingMedicine;
 
   const MedicineDailyFrequencyPage({
     super.key,
     required this.medicineName,
     required this.medicineForm,
     required this.frequency,
+    this.existingMedicine,
   });
 
   @override
@@ -56,6 +59,7 @@ class _MedicineDailyFrequencyPageState
           medicineForm: widget.medicineForm,
           frequency: widget.frequency,
           dailyFrequency: _selectedDailyFrequency!,
+          existingMedicine: widget.existingMedicine,
         ),
       ),
     );
@@ -234,10 +238,7 @@ class _MedicineDailyFrequencyPageState
     );
   }
 
-  Widget _buildFrequencyOption({
-    required String name,
-    required IconData icon,
-  }) {
+  Widget _buildFrequencyOption({required String name, required IconData icon}) {
     final cs = Theme.of(context).colorScheme;
     final isSelected = _selectedDailyFrequency == name;
 
@@ -286,11 +287,11 @@ class _MedicineDailyFrequencyPageState
                 child: Text(
                   name,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: isSelected
-                            ? cs.primary
-                            : cs.onSurface.withOpacity(0.8),
-                      ),
+                    fontWeight: FontWeight.w600,
+                    color: isSelected
+                        ? cs.primary
+                        : cs.onSurface.withOpacity(0.8),
+                  ),
                 ),
               ),
 
@@ -303,7 +304,9 @@ class _MedicineDailyFrequencyPageState
                   shape: BoxShape.circle,
                   color: isSelected ? cs.primary : Colors.transparent,
                   border: Border.all(
-                    color: isSelected ? cs.primary : cs.outline.withOpacity(0.3),
+                    color: isSelected
+                        ? cs.primary
+                        : cs.outline.withOpacity(0.3),
                     width: 2,
                   ),
                 ),

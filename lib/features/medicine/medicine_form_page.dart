@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import 'medicine_frequency_page.dart';
+import '../../models/medicine.dart';
 
 class MedicineFormPage extends StatefulWidget {
   final String medicineName;
+  final Medicine? existingMedicine;
 
-  const MedicineFormPage({super.key, required this.medicineName});
+  const MedicineFormPage({
+    super.key,
+    required this.medicineName,
+    this.existingMedicine,
+  });
 
   @override
   State<MedicineFormPage> createState() => _MedicineFormPageState();
@@ -12,6 +18,14 @@ class MedicineFormPage extends StatefulWidget {
 
 class _MedicineFormPageState extends State<MedicineFormPage> {
   String? _selectedForm;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.existingMedicine != null) {
+      _selectedForm = widget.existingMedicine!.form;
+    }
+  }
 
   final List<Map<String, dynamic>> _forms = [
     {'name': 'Pill', 'icon': Icons.medication_outlined},
@@ -44,6 +58,7 @@ class _MedicineFormPageState extends State<MedicineFormPage> {
         builder: (context) => MedicineFrequencyPage(
           medicineName: widget.medicineName,
           medicineForm: _selectedForm!,
+          existingMedicine: widget.existingMedicine,
         ),
       ),
     );
