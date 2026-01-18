@@ -4,6 +4,7 @@ import '../models/medicine.dart';
 import '../services/medicine_service.dart';
 import '../features/progress/progress_page.dart';
 import '../features/settings/settings_page.dart';
+import '../features/medicine_stock/medicine_stock_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -48,7 +49,7 @@ class _HomePageState extends State<HomePage> {
     final List<Widget> pages = [
       _buildHomePage(cs, textTheme, firstName),
       const ProgressPage(),
-      Container(), // Medications page placeholder
+      const MedicineStockPage(),
       const SettingsPage(),
     ];
 
@@ -86,9 +87,9 @@ class _HomePageState extends State<HomePage> {
               label: 'Progress',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.medication_outlined),
-              activeIcon: Icon(Icons.medication),
-              label: 'Medications',
+              icon: Icon(Icons.inventory_2_outlined),
+              activeIcon: Icon(Icons.inventory_2),
+              label: 'Stock',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.settings_outlined),
@@ -689,18 +690,49 @@ class _HomePageState extends State<HomePage> {
                         label: 'TAKE',
                         color: cs.onPrimary,
                         backgroundColor: cs.primary,
-                        onTap: () {
+                        onTap: () async {
                           Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('${medicine.name} marked as taken'),
-                              backgroundColor: cs.primary,
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
+
+                          // Decrease quantity
+                          final newQuantity =
+                              medicine.quantity - medicine.dosage;
+                          final updatedMedicine = Medicine(
+                            id: medicine.id,
+                            name: medicine.name,
+                            form: medicine.form,
+                            frequency: medicine.frequency,
+                            dailyFrequency: medicine.dailyFrequency,
+                            time: medicine.time,
+                            dosage: medicine.dosage,
+                            createdAt: medicine.createdAt,
+                            quantity: newQuantity >= 0 ? newQuantity : 0,
                           );
+
+                          await MedicineService.updateMedicine(updatedMedicine);
+                          _loadMedicines();
+
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  newQuantity < 0
+                                      ? '${medicine.name} taken - Out of stock!'
+                                      : newQuantity < medicine.dosage * 3
+                                      ? '${medicine.name} taken - Low stock: $newQuantity ${medicine.form}'
+                                      : '${medicine.name} marked as taken',
+                                ),
+                                backgroundColor: newQuantity < 0
+                                    ? Colors.red
+                                    : newQuantity < medicine.dosage * 3
+                                    ? Colors.orange
+                                    : cs.primary,
+                                behavior: SnackBarBehavior.floating,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            );
+                          }
                         },
                       ),
                     ),
