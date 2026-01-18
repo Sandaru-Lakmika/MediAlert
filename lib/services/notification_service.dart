@@ -56,13 +56,14 @@ class NotificationService {
     _initialized = true;
   }
 
+  static void Function(String?)? onNotificationTapped;
+
   Future<void> _onNotificationTap(NotificationResponse response) async {
     // This will be called when user taps on the notification
-    // The app will already be opened, we just need to navigate
-    // Navigation will be handled in main.dart using a global key
     if (response.payload != null) {
-      // The payload contains the medicine ID
       print('Notification tapped with payload: ${response.payload}');
+      // Call the registered callback
+      onNotificationTapped?.call(response.payload);
     }
   }
 
@@ -166,6 +167,37 @@ class NotificationService {
         ),
       ),
       payload: medicine.id,
+    );
+  }
+
+  // Show low stock notification
+  Future<void> showLowStockNotification(Medicine medicine) async {
+    await initialize();
+
+    await _notificationsPlugin.show(
+      medicine.id.hashCode + 1000, // Different ID for low stock notifications
+      '⚠️ Low Stock Alert',
+      '${medicine.name} is running low! Only ${medicine.quantity} ${medicine.form}(s) remaining',
+      NotificationDetails(
+        android: AndroidNotificationDetails(
+          'low_stock_alerts',
+          'Low Stock Alerts',
+          channelDescription: 'Notifications for low medicine stock',
+          importance: Importance.high,
+          priority: Priority.high,
+          icon: '@mipmap/ic_launcher',
+          color: Color(0xFFFFA726),
+          playSound: true,
+          enableVibration: true,
+        ),
+        iOS: const DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+        ),
+      ),
+      payload:
+          'low_stock:${medicine.id}', // Special payload for stock navigation
     );
   }
 }
