@@ -24,14 +24,57 @@ class MedicineTimePage extends StatefulWidget {
 }
 
 class _MedicineTimePageState extends State<MedicineTimePage> {
-  TimeOfDay? _selectedTime = const TimeOfDay(hour: 8, minute: 0);
-  int _dosageAmount = 1;
+  late List<TimeOfDay?> _selectedTimes;
+  late List<int> _dosageAmounts;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeTimeSlots();
+  }
+
+  void _initializeTimeSlots() {
+    int numSlots = _getNumberOfTimeSlots();
+    _selectedTimes = List.generate(
+      numSlots,
+      (index) => TimeOfDay(hour: 8 + (index * 4), minute: 0),
+    );
+    _dosageAmounts = List.generate(numSlots, (index) => 1);
+  }
+
+  int _getNumberOfTimeSlots() {
+    switch (widget.dailyFrequency) {
+      case 'Once a day':
+        return 1;
+      case 'Twice a day':
+        return 2;
+      case '3 times a day':
+        return 3;
+      case 'More than 3 times a day':
+        return 3;
+      default:
+        return 1;
+    }
+  }
+
+  bool _canAddMoreDoses() {
+    return widget.dailyFrequency == 'More than 3 times a day';
+  }
+
+  void _addNewDoseSlot() {
+    setState(() {
+      int nextHour = 8 + (_selectedTimes.length * 3);
+      if (nextHour > 23) nextHour = 20;
+      _selectedTimes.add(TimeOfDay(hour: nextHour, minute: 0));
+      _dosageAmounts.add(1);
+    });
+  }
 
   void _handleNext() async {
-    if (_selectedTime == null) {
+    if (_selectedTimes.any((time) => time == null)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Please select a time'),
+          content: const Text('Please select all time slots'),
           backgroundColor: Theme.of(context).colorScheme.error,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
@@ -42,7 +85,7 @@ class _MedicineTimePageState extends State<MedicineTimePage> {
       return;
     }
 
-    // Navigate to final options page
+    // Navigate to final options page with first time
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -51,17 +94,17 @@ class _MedicineTimePageState extends State<MedicineTimePage> {
           medicineForm: widget.medicineForm,
           frequency: widget.frequency,
           dailyFrequency: widget.dailyFrequency,
-          time: _selectedTime!,
-          dosage: _dosageAmount,
+          time: _selectedTimes.first!,
+          dosage: _dosageAmounts.first,
           existingMedicine: widget.existingMedicine,
         ),
       ),
     );
   }
 
-  void _selectTime(TimeOfDay time) {
+  void _selectTime(int index, TimeOfDay time) {
     setState(() {
-      _selectedTime = time;
+      _selectedTimes[index] = time;
     });
   }
 
@@ -170,97 +213,36 @@ class _MedicineTimePageState extends State<MedicineTimePage> {
 
                       const SizedBox(height: 40),
 
-                      // Time Picker Container
-                      Container(
-                        padding: const EdgeInsets.all(32),
-                        decoration: BoxDecoration(
-                          color: Colors.black87,
-                          borderRadius: BorderRadius.circular(24),
-                          boxShadow: [
-                            BoxShadow(
-                              color: cs.primary.withOpacity(0.15),
-                              blurRadius: 20,
-                              offset: const Offset(0, 8),
+                      // Time Slots - Dynamic based on daily frequency
+                      ..._buildTimeSlots(),
+
+                      // Add Dose Button (only for "More than 3 times a day")
+                      if (_canAddMoreDoses()) ...[
+                        const SizedBox(height: 16),
+                        Center(
+                          child: OutlinedButton.icon(
+                            onPressed: _addNewDoseSlot,
+                            icon: Icon(Icons.add, color: cs.primary),
+                            label: Text(
+                              'Add Another Dose',
+                              style: textTheme.titleMedium?.copyWith(
+                                color: cs.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
-                          ],
-                        ),
-                        child: Column(
-                          children: [
-                            // Dosage info section
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  'Take',
-                                  style: textTheme.titleMedium?.copyWith(
-                                    color: Colors.white70,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                InkWell(
-                                  onTap: () async {
-                                    // Navigate to dosage page
-                                    final result = await Navigator.push<int>(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            MedicineDosagePage(
-                                              medicineName: widget.medicineName,
-                                              medicineForm: widget.medicineForm,
-                                              frequency: widget.frequency,
-                                              dailyFrequency:
-                                                  widget.dailyFrequency,
-                                              time: _selectedTime!,
-                                            ),
-                                      ),
-                                    );
-                                    if (result != null) {
-                                      setState(() {
-                                        _dosageAmount = result;
-                                      });
-                                    }
-                                  },
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 8,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        Text(
-                                          '$_dosageAmount Pill(s)',
-                                          style: textTheme.titleMedium
-                                              ?.copyWith(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Icon(
-                                          Icons.edit_outlined,
-                                          size: 18,
-                                          color: cs.primary,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 12,
+                              ),
+                              side: BorderSide(color: cs.primary, width: 2),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
-
-                            const SizedBox(height: 40),
-
-                            // Time Display
-                            _buildTimeWheel(),
-
-                            const SizedBox(height: 20),
-                          ],
+                          ),
                         ),
-                      ),
+                      ],
 
                       const SizedBox(height: 60),
 
@@ -318,7 +300,116 @@ class _MedicineTimePageState extends State<MedicineTimePage> {
     );
   }
 
-  Widget _buildTimeWheel() {
+  List<Widget> _buildTimeSlots() {
+    final cs = Theme.of(context).colorScheme;
+
+    return List.generate(_selectedTimes.length, (index) {
+      String timeLabel = _getTimeLabel(index);
+
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.black87,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: cs.primary.withOpacity(0.15),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    timeLabel,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: Colors.white70,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () async {
+                      final result = await Navigator.push<int>(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => MedicineDosagePage(
+                            medicineName: widget.medicineName,
+                            medicineForm: widget.medicineForm,
+                            frequency: widget.frequency,
+                            dailyFrequency: widget.dailyFrequency,
+                            time: _selectedTimes[index]!,
+                          ),
+                        ),
+                      );
+                      if (result != null) {
+                        setState(() {
+                          _dosageAmounts[index] = result;
+                        });
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Take',
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(color: Colors.white70),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            '${_dosageAmounts[index]} Pill(s)',
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                          ),
+                          const SizedBox(width: 4),
+                          Icon(
+                            Icons.edit_outlined,
+                            size: 16,
+                            color: cs.primary,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              _buildTimeWheel(index),
+            ],
+          ),
+        ),
+      );
+    });
+  }
+
+  String _getTimeLabel(int index) {
+    final labels = ['First', 'Second', 'Third', 'Fourth'];
+    if (index < labels.length) {
+      return '${labels[index]} dose';
+    }
+    return 'Dose ${index + 1}';
+  }
+
+  Widget _buildTimeWheel(int index) {
     final cs = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
@@ -326,7 +417,7 @@ class _MedicineTimePageState extends State<MedicineTimePage> {
       onTap: () async {
         final TimeOfDay? picked = await showTimePicker(
           context: context,
-          initialTime: _selectedTime ?? TimeOfDay.now(),
+          initialTime: _selectedTimes[index] ?? TimeOfDay.now(),
           builder: (context, child) {
             return Theme(
               data: Theme.of(context).copyWith(
@@ -343,7 +434,7 @@ class _MedicineTimePageState extends State<MedicineTimePage> {
           },
         );
         if (picked != null) {
-          _selectTime(picked);
+          _selectTime(index, picked);
         }
       },
       child: Column(
@@ -352,7 +443,9 @@ class _MedicineTimePageState extends State<MedicineTimePage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildTimeUnit(_selectedTime!.hour.toString().padLeft(2, '0')),
+              _buildTimeUnit(
+                _selectedTimes[index]!.hour.toString().padLeft(2, '0'),
+              ),
               Text(
                 ':',
                 style: textTheme.displayLarge?.copyWith(
@@ -360,7 +453,9 @@ class _MedicineTimePageState extends State<MedicineTimePage> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              _buildTimeUnit(_selectedTime!.minute.toString().padLeft(2, '0')),
+              _buildTimeUnit(
+                _selectedTimes[index]!.minute.toString().padLeft(2, '0'),
+              ),
             ],
           ),
         ],

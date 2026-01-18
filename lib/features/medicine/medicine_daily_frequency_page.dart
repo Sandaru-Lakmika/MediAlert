@@ -30,9 +30,6 @@ class _MedicineDailyFrequencyPageState
     {'name': 'Twice a day', 'icon': Icons.looks_two_outlined},
     {'name': '3 times a day', 'icon': Icons.looks_3_outlined},
     {'name': 'More than 3 times a day', 'icon': Icons.more_horiz},
-    {'name': 'Every X hours', 'icon': Icons.access_time_outlined},
-    {'name': 'On a recurring cycle', 'icon': Icons.refresh_outlined},
-    {'name': 'Only as needed', 'icon': Icons.help_outline},
   ];
 
   void _handleNext() {
