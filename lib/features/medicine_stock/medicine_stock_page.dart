@@ -9,13 +9,23 @@ class MedicineStockPage extends StatefulWidget {
   State<MedicineStockPage> createState() => _MedicineStockPageState();
 }
 
-class _MedicineStockPageState extends State<MedicineStockPage> {
+class _MedicineStockPageState extends State<MedicineStockPage>
+    with AutomaticKeepAliveClientMixin {
   List<Medicine> _medicines = [];
   bool _isLoading = true;
 
   @override
+  bool get wantKeepAlive => false;
+
+  @override
   void initState() {
     super.initState();
+    _loadMedicines();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     _loadMedicines();
   }
 
