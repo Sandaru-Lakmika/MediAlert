@@ -43,6 +43,12 @@ class _MedicineTimePageState extends State<MedicineTimePage> {
   }
 
   int _getNumberOfTimeSlots() {
+    // Check if it's a custom "Every X hours" pattern
+    if (widget.dailyFrequency.startsWith('Every ') &&
+        widget.dailyFrequency.endsWith(' hours')) {
+      return 1;
+    }
+
     switch (widget.dailyFrequency) {
       case 'Once a day':
         return 1;
@@ -52,6 +58,12 @@ class _MedicineTimePageState extends State<MedicineTimePage> {
         return 3;
       case 'More than 3 times a day':
         return 3;
+      case 'Every 2 hours':
+      case 'Every 4 hours':
+      case 'Every 6 hours':
+      case 'Every 8 hours':
+      case 'Every 12 hours':
+        return 1;
       default:
         return 1;
     }
@@ -311,7 +323,7 @@ class _MedicineTimePageState extends State<MedicineTimePage> {
         child: Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: Colors.black87,
+            color: Colors.white,
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
@@ -330,7 +342,7 @@ class _MedicineTimePageState extends State<MedicineTimePage> {
                   Text(
                     timeLabel,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Colors.white70,
+                      color: cs.onSurface,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -360,7 +372,7 @@ class _MedicineTimePageState extends State<MedicineTimePage> {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
+                        color: cs.primaryContainer.withOpacity(0.3),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
@@ -369,14 +381,16 @@ class _MedicineTimePageState extends State<MedicineTimePage> {
                           Text(
                             'Take',
                             style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(color: Colors.white70),
+                                ?.copyWith(
+                                  color: cs.onSurface.withOpacity(0.7),
+                                ),
                           ),
                           const SizedBox(width: 8),
                           Text(
                             '${_dosageAmounts[index]} Pill(s)',
                             style: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(
-                                  color: Colors.white,
+                                  color: cs.onSurface,
                                   fontWeight: FontWeight.bold,
                                 ),
                           ),
@@ -449,7 +463,7 @@ class _MedicineTimePageState extends State<MedicineTimePage> {
               Text(
                 ':',
                 style: textTheme.displayLarge?.copyWith(
-                  color: Colors.white,
+                  color: cs.onSurface,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -465,21 +479,22 @@ class _MedicineTimePageState extends State<MedicineTimePage> {
 
   Widget _buildTimeUnit(String value) {
     final textTheme = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
 
     return Container(
       width: 80,
       padding: const EdgeInsets.symmetric(vertical: 12),
       margin: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: cs.primaryContainer.withOpacity(0.2),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
+        border: Border.all(color: cs.outline.withOpacity(0.2), width: 1),
       ),
       child: Text(
         value,
         textAlign: TextAlign.center,
         style: textTheme.displayMedium?.copyWith(
-          color: Colors.white,
+          color: cs.onSurface,
           fontWeight: FontWeight.bold,
         ),
       ),
