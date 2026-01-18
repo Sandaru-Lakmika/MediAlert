@@ -28,6 +28,18 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     _loadMedicines();
     _checkMissedDoses();
+    _setupNotificationHandler();
+  }
+
+  void _setupNotificationHandler() {
+    NotificationService.onNotificationTapped = (payload) {
+      if (payload != null && payload.startsWith('low_stock:')) {
+        // Navigate to stock tab (index 2)
+        setState(() {
+          _selectedIndex = 2;
+        });
+      }
+    };
   }
 
   @override
@@ -899,6 +911,12 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
                           await MedicineService.updateMedicine(updatedMedicine);
                           _loadMedicines();
+
+                          // Send low stock notification if quantity is less than 5
+                          if (newQuantity > 0 && newQuantity < 5) {
+                            await NotificationService()
+                                .showLowStockNotification(updatedMedicine);
+                          }
 
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
