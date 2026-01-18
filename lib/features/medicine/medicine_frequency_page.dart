@@ -29,12 +29,6 @@ class _MedicineFrequencyPageState extends State<MedicineFrequencyPage> {
   final List<Map<String, dynamic>> _frequencies = [
     {'name': 'Every day', 'icon': Icons.today_outlined, 'needsDialog': false},
     {
-      'name': 'Every other day',
-      'icon': Icons.calendar_today_outlined,
-      'needsDialog': true,
-      'dialogType': 'everyOtherDay',
-    },
-    {
       'name': 'Specific days of the week',
       'icon': Icons.date_range_outlined,
       'needsDialog': true,
@@ -44,24 +38,6 @@ class _MedicineFrequencyPageState extends State<MedicineFrequencyPage> {
       'name': 'On a recurring cycle',
       'icon': Icons.refresh_outlined,
       'needsDialog': false,
-    },
-    {
-      'name': 'Every X days',
-      'icon': Icons.calendar_view_day_outlined,
-      'needsDialog': true,
-      'dialogType': 'daysOfMonth',
-    },
-    {
-      'name': 'Every X weeks',
-      'icon': Icons.calendar_view_week_outlined,
-      'needsDialog': true,
-      'dialogType': 'weeksOfMonth',
-    },
-    {
-      'name': 'Every X months',
-      'icon': Icons.calendar_view_month_outlined,
-      'needsDialog': true,
-      'dialogType': 'monthsOfYear',
     },
   ];
 
@@ -518,34 +494,12 @@ class _MedicineFrequencyPageState extends State<MedicineFrequencyPage> {
 
   String _getFrequencyDetails(String frequency) {
     switch (frequency) {
-      case 'Every other day':
-        return _selectedEveryOtherDayDays.isEmpty
-            ? ''
-            : _selectedEveryOtherDayDays.length <= 2
-            ? _selectedEveryOtherDayDays.join(', ')
-            : '${_selectedEveryOtherDayDays.length} days selected';
       case 'Specific days of the week':
         return _selectedDays.isEmpty
             ? ''
             : _selectedDays.length <= 2
             ? _selectedDays.join(', ')
             : '${_selectedDays.length} days selected';
-      case 'Every X days':
-        return _selectedDaysOfMonth.isEmpty
-            ? ''
-            : _selectedDaysOfMonth.length <= 3
-            ? _selectedDaysOfMonth.map((d) => d.toString()).join(', ')
-            : '${_selectedDaysOfMonth.length} days selected';
-      case 'Every X weeks':
-        return _selectedWeeksOfMonth.isEmpty
-            ? ''
-            : 'Week ${_selectedWeeksOfMonth.map((w) => w.toString()).join(', ')}';
-      case 'Every X months':
-        return _selectedMonthsOfYear.isEmpty
-            ? ''
-            : _selectedMonthsOfYear.length <= 2
-            ? _selectedMonthsOfYear.join(', ')
-            : '${_selectedMonthsOfYear.length} months selected';
       default:
         return '';
     }
