@@ -112,60 +112,6 @@ class SettingsPage extends StatelessWidget {
                     ),
 
                     const SizedBox(height: 24),
-
-                    // App Section
-                    _buildSectionHeader('App', cs, textTheme),
-                    _buildSettingsCard(
-                      context: context,
-                      icon: Icons.palette_outlined,
-                      title: 'Theme',
-                      subtitle: 'Light, Dark, or System',
-                      cs: cs,
-                      textTheme: textTheme,
-                      onTap: () {
-                        // TODO: Theme settings
-                      },
-                    ),
-                    _buildSettingsCard(
-                      context: context,
-                      icon: Icons.language_outlined,
-                      title: 'Language',
-                      subtitle: 'English',
-                      cs: cs,
-                      textTheme: textTheme,
-                      onTap: () {
-                        // TODO: Language settings
-                      },
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // Support Section
-                    _buildSectionHeader('Support', cs, textTheme),
-                    _buildSettingsCard(
-                      context: context,
-                      icon: Icons.help_outline,
-                      title: 'Help & Support',
-                      subtitle: 'Get assistance',
-                      cs: cs,
-                      textTheme: textTheme,
-                      onTap: () {
-                        // TODO: Help
-                      },
-                    ),
-                    _buildSettingsCard(
-                      context: context,
-                      icon: Icons.info_outline,
-                      title: 'About',
-                      subtitle: 'App version and information',
-                      cs: cs,
-                      textTheme: textTheme,
-                      onTap: () {
-                        _showAboutDialog(context, cs, textTheme);
-                      },
-                    ),
-
-                    const SizedBox(height: 24),
                   ],
                 ),
               ),
@@ -260,62 +206,6 @@ class SettingsPage extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  void _showAboutDialog(
-    BuildContext context,
-    ColorScheme cs,
-    TextTheme textTheme,
-  ) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
-          children: [
-            Icon(Icons.medication, color: cs.primary, size: 28),
-            const SizedBox(width: 12),
-            Text(
-              'MediAlert',
-              style: textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: cs.primary,
-              ),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Version 1.0.0',
-              style: textTheme.bodyMedium?.copyWith(
-                color: cs.onSurface.withOpacity(0.7),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Your personal medication reminder assistant. Never miss a dose again!',
-              style: textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              '© 2026 MediAlert Team',
-              style: textTheme.bodySmall?.copyWith(
-                color: cs.onSurface.withOpacity(0.5),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Close', style: TextStyle(color: cs.primary)),
-          ),
-        ],
       ),
     );
   }
