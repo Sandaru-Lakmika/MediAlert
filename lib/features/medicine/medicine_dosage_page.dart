@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'medicine_final_options_page.dart';
 
 class MedicineDosagePage extends StatefulWidget {
   final String medicineName;
@@ -22,7 +23,9 @@ class MedicineDosagePage extends StatefulWidget {
 }
 
 class _MedicineDosagePageState extends State<MedicineDosagePage> {
-  final TextEditingController _dosageController = TextEditingController(text: '1');
+  final TextEditingController _dosageController = TextEditingController(
+    text: '1',
+  );
   String _selectedUnit = 'Pill(s)';
 
   @override
@@ -43,9 +46,21 @@ class _MedicineDosagePageState extends State<MedicineDosagePage> {
       );
       return;
     }
-    
-    // Return to previous page with updated dosage
-    Navigator.pop(context, dosage);
+
+    // Navigate to final options page
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MedicineFinalOptionsPage(
+          medicineName: widget.medicineName,
+          medicineForm: widget.medicineForm,
+          frequency: widget.frequency,
+          dailyFrequency: widget.dailyFrequency,
+          time: widget.time,
+          dosage: dosage,
+        ),
+      ),
+    );
   }
 
   @override
@@ -168,11 +183,11 @@ class _MedicineDosagePageState extends State<MedicineDosagePage> {
                       Container(
                         padding: const EdgeInsets.all(40),
                         decoration: BoxDecoration(
-                          color: Colors.black87,
+                          color: Colors.white,
                           borderRadius: BorderRadius.circular(24),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.3),
+                              color: cs.primary.withOpacity(0.15),
                               blurRadius: 20,
                               offset: const Offset(0, 8),
                             ),
@@ -188,10 +203,10 @@ class _MedicineDosagePageState extends State<MedicineDosagePage> {
                                 vertical: 20,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.05),
+                                color: cs.primaryContainer.withOpacity(0.2),
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
-                                  color: Colors.white.withOpacity(0.2),
+                                  color: cs.outline.withOpacity(0.2),
                                   width: 1,
                                 ),
                               ),
@@ -203,7 +218,7 @@ class _MedicineDosagePageState extends State<MedicineDosagePage> {
                                   FilteringTextInputFormatter.digitsOnly,
                                 ],
                                 style: textTheme.displaySmall?.copyWith(
-                                  color: Colors.white,
+                                  color: cs.onSurface,
                                   fontWeight: FontWeight.bold,
                                 ),
                                 decoration: const InputDecoration(
@@ -213,7 +228,7 @@ class _MedicineDosagePageState extends State<MedicineDosagePage> {
                                 ),
                               ),
                             ),
-                            
+
                             const SizedBox(height: 24),
 
                             // Unit Selector

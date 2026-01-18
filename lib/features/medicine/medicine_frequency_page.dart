@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'medicine_daily_frequency_page.dart';
+import 'medicine_recurring_cycle_page.dart';
 import '../../models/medicine.dart';
 
 class MedicineFrequencyPage extends StatefulWidget {
@@ -478,18 +479,34 @@ class _MedicineFrequencyPageState extends State<MedicineFrequencyPage> {
       return;
     }
 
-    // Navigate to daily frequency page
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => MedicineDailyFrequencyPage(
-          medicineName: widget.medicineName,
-          medicineForm: widget.medicineForm,
-          frequency: _selectedFrequency!,
-          existingMedicine: widget.existingMedicine,
+    // Navigate based on frequency type
+    if (_selectedFrequency == 'On a recurring cycle') {
+      // Navigate to recurring cycle page
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MedicineRecurringCyclePage(
+            medicineName: widget.medicineName,
+            medicineForm: widget.medicineForm,
+            frequency: _selectedFrequency!,
+            existingMedicine: widget.existingMedicine,
+          ),
         ),
-      ),
-    );
+      );
+    } else {
+      // Navigate to daily frequency page for other options
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MedicineDailyFrequencyPage(
+            medicineName: widget.medicineName,
+            medicineForm: widget.medicineForm,
+            frequency: _selectedFrequency!,
+            existingMedicine: widget.existingMedicine,
+          ),
+        ),
+      );
+    }
   }
 
   String _getFrequencyDetails(String frequency) {
