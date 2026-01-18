@@ -302,10 +302,10 @@ class _MedicineTimePageState extends State<MedicineTimePage> {
 
   List<Widget> _buildTimeSlots() {
     final cs = Theme.of(context).colorScheme;
-    
+
     return List.generate(_selectedTimes.length, (index) {
       String timeLabel = _getTimeLabel(index);
-      
+
       return Padding(
         padding: const EdgeInsets.only(bottom: 16),
         child: Container(
@@ -368,17 +368,17 @@ class _MedicineTimePageState extends State<MedicineTimePage> {
                         children: [
                           Text(
                             'Take',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Colors.white70,
-                            ),
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(color: Colors.white70),
                           ),
                           const SizedBox(width: 8),
                           Text(
                             '${_dosageAmounts[index]} Pill(s)',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
                           ),
                           const SizedBox(width: 4),
                           Icon(
@@ -443,7 +443,9 @@ class _MedicineTimePageState extends State<MedicineTimePage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildTimeUnit(_selectedTimes[index]!.hour.toString().padLeft(2, '0')),
+              _buildTimeUnit(
+                _selectedTimes[index]!.hour.toString().padLeft(2, '0'),
+              ),
               Text(
                 ':',
                 style: textTheme.displayLarge?.copyWith(
@@ -451,7 +453,9 @@ class _MedicineTimePageState extends State<MedicineTimePage> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              _buildTimeUnit(_selectedTimes[index]!.minute.toString().padLeft(2, '0')),
+              _buildTimeUnit(
+                _selectedTimes[index]!.minute.toString().padLeft(2, '0'),
+              ),
             ],
           ),
         ],
