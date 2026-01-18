@@ -37,6 +37,10 @@ class MedicineService {
     await prefs.setString(_medicinesKey, encoded);
   }
 
+  static Future<void> updateMedicine(Medicine medicine) async {
+    await saveMedicine(medicine);
+  }
+
   static Future<void> deleteMedicine(String id) async {
     final prefs = await SharedPreferences.getInstance();
     final medicines = await getMedicines();

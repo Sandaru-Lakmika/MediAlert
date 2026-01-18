@@ -9,6 +9,7 @@ class Medicine {
   final TimeOfDay time;
   final int dosage;
   final DateTime createdAt;
+  final int quantity;
 
   Medicine({
     required this.id,
@@ -19,6 +20,7 @@ class Medicine {
     required this.time,
     required this.dosage,
     required this.createdAt,
+    this.quantity = 0,
   });
 
   Map<String, dynamic> toJson() {
@@ -32,6 +34,7 @@ class Medicine {
       'timeMinute': time.minute,
       'dosage': dosage,
       'createdAt': createdAt.toIso8601String(),
+      'quantity': quantity,
     };
   }
 
@@ -48,6 +51,7 @@ class Medicine {
       ),
       dosage: json['dosage'] as int,
       createdAt: DateTime.parse(json['createdAt'] as String),
+      quantity: json['quantity'] as int? ?? 0,
     );
   }
 
