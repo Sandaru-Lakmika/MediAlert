@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../models/user_data.dart';
 import '../models/medicine.dart';
 import '../services/medicine_service.dart';
+import '../services/activity_service.dart';
+import '../services/progress_notifier.dart';
 import '../features/progress/progress_page.dart';
 import '../features/settings/settings_page.dart';
 import '../features/medicine_stock/medicine_stock_page.dart';
@@ -692,6 +694,20 @@ class _HomePageState extends State<HomePage> {
                         backgroundColor: cs.primary,
                         onTap: () async {
                           Navigator.pop(context);
+
+                          // Record activity
+                          final activity = MedicineActivity(
+                            id: DateTime.now().millisecondsSinceEpoch
+                                .toString(),
+                            medicineName: medicine.name,
+                            medicineForm: medicine.form,
+                            action: 'taken',
+                            timestamp: DateTime.now(),
+                          );
+                          await ActivityService.recordActivity(activity);
+
+                          // Notify progress page to update
+                          ProgressNotifier().notifyProgressUpdate();
 
                           // Decrease quantity
                           final newQuantity =
