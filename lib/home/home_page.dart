@@ -4,6 +4,7 @@ import '../models/medicine.dart';
 import '../services/medicine_service.dart';
 import '../services/activity_service.dart';
 import '../services/progress_notifier.dart';
+import '../services/notification_service.dart';
 import '../features/progress/progress_page.dart';
 import '../features/settings/settings_page.dart';
 import '../features/medicine_stock/medicine_stock_page.dart';
@@ -15,7 +16,7 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   final userData = UserData();
   int _selectedIndex = 0;
   List<Medicine> _medicines = [];
@@ -24,7 +25,75 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadMedicines();
+    _checkMissedDoses();
+    _setupNotificationHandler();
+  }
+
+  void _setupNotificationHandler() {
+    NotificationService.onNotificationTapped = (payload) {
+      if (payload != null && payload.startsWith('low_stock:')) {
+        // Navigate to stock tab (index 2)
+        setState(() {
+          _selectedIndex = 2;
+        });
+      }
+    };
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Check for missed doses when app comes to foreground
+      _checkMissedDoses();
+      _loadMedicines();
+    }
+  }
+
+  Future<void> _checkMissedDoses() async {
+    final medicines = await MedicineService.getMedicines();
+    final now = DateTime.now();
+
+    for (final medicine in medicines) {
+      final scheduledTime = DateTime(
+        now.year,
+        now.month,
+        now.day,
+        medicine.time.hour,
+        medicine.time.minute,
+      );
+
+      // Check if scheduled time has passed
+      if (scheduledTime.isBefore(now)) {
+        final isTaken = await _isMedicineTakenToday(medicine.name);
+        final activities = await ActivityService.getTodayActivities();
+        final isMissed = activities.any(
+          (activity) =>
+              activity.medicineName == medicine.name &&
+              activity.action == 'missed',
+        );
+
+        // If not taken and not already marked as missed, mark as missed
+        if (!isTaken && !isMissed) {
+          final activity = MedicineActivity(
+            id: '${medicine.id}_missed_${DateTime.now().millisecondsSinceEpoch}',
+            medicineName: medicine.name,
+            medicineForm: medicine.form,
+            action: 'missed',
+            timestamp: scheduledTime,
+          );
+          await ActivityService.recordActivity(activity);
+          ProgressNotifier().notifyProgressUpdate();
+        }
+      }
+    }
   }
 
   Future<void> _loadMedicines() async {
@@ -33,12 +102,23 @@ class _HomePageState extends State<HomePage> {
       _medicines = medicines;
       _isLoading = false;
     });
+
+    // Reschedule all notifications
+    await NotificationService().scheduleAllMedicineNotifications(medicines);
   }
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
+  }
+
+  Future<bool> _isMedicineTakenToday(String medicineName) async {
+    final activities = await ActivityService.getTodayActivities();
+    return activities.any(
+      (activity) =>
+          activity.medicineName == medicineName && activity.action == 'taken',
+    );
   }
 
   @override
@@ -375,120 +455,170 @@ class _HomePageState extends State<HomePage> {
     ColorScheme cs,
     TextTheme textTheme,
   ) {
-    final now = DateTime.now();
-    final scheduledTime = DateTime(
-      now.year,
-      now.month,
-      now.day,
-      medicine.time.hour,
-      medicine.time.minute,
-    );
-    final isPast = scheduledTime.isBefore(now);
+    return FutureBuilder<bool>(
+      future: _isMedicineTakenToday(medicine.name),
+      builder: (context, snapshot) {
+        final isTaken = snapshot.data ?? false;
+        final now = DateTime.now();
+        final scheduledTime = DateTime(
+          now.year,
+          now.month,
+          now.day,
+          medicine.time.hour,
+          medicine.time.minute,
+        );
+        final isPast = scheduledTime.isBefore(now);
+        final showMissed = isPast && !isTaken;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: cs.surface,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          decoration: BoxDecoration(
+            color: cs.surface,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: () {
-            _showMedicineDetailDialog(medicine);
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                // Medicine icon
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: cs.primaryContainer,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(Icons.medication, color: cs.primary, size: 28),
-                ),
-                const SizedBox(width: 16),
-                // Medicine details
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        medicine.name,
-                        style: textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: cs.onSurface,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Take ${medicine.dosage} ${medicine.form}(s)',
-                        style: textTheme.bodyMedium?.copyWith(
-                          color: cs.onSurface.withOpacity(0.7),
-                        ),
-                      ),
-                      if (isPast)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 4),
-                          child: Text(
-                            'Missed',
-                            style: textTheme.bodySmall?.copyWith(
-                              color: Colors.red,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-                // Time
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(16),
+              onTap: () {
+                _showMedicineDetailDialog(medicine);
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
                   children: [
-                    Text(
-                      medicine.formattedTime,
-                      style: textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: isPast ? Colors.red : cs.primary,
+                    // Medicine icon
+                    Container(
+                      width: 56,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        color: cs.primaryContainer,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.medication,
+                        color: cs.primary,
+                        size: 28,
                       ),
                     ),
-                    if (isPast)
-                      Container(
-                        margin: const EdgeInsets.only(top: 4),
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.error_outline,
-                          color: Colors.white,
-                          size: 16,
-                        ),
+                    const SizedBox(width: 16),
+                    // Medicine details
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            medicine.name,
+                            style: textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: cs.onSurface,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Take ${medicine.dosage} ${medicine.form}(s)',
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: cs.onSurface.withOpacity(0.7),
+                            ),
+                          ),
+                          if (showMissed)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: Text(
+                                'Missed',
+                                style: textTheme.bodySmall?.copyWith(
+                                  color: Colors.red,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            )
+                          else if (isTaken)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.check_circle,
+                                    size: 14,
+                                    color: Colors.green,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Completed',
+                                    style: textTheme.bodySmall?.copyWith(
+                                      color: Colors.green,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                        ],
                       ),
+                    ),
+                    // Time
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          medicine.formattedTime,
+                          style: textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: isTaken
+                                ? Colors.green
+                                : showMissed
+                                ? Colors.red
+                                : cs.primary,
+                          ),
+                        ),
+                        if (showMissed)
+                          Container(
+                            margin: const EdgeInsets.only(top: 4),
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.error_outline,
+                              color: Colors.white,
+                              size: 16,
+                            ),
+                          )
+                        else if (isTaken)
+                          Container(
+                            margin: const EdgeInsets.only(top: 4),
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: Colors.green,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.check_circle,
+                              color: Colors.white,
+                              size: 16,
+                            ),
+                          ),
+                      ],
+                    ),
                   ],
                 ),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
-  void _showMedicineDetailDialog(Medicine medicine) {
+  void _showMedicineDetailDialog(Medicine medicine) async {
     final cs = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final now = DateTime.now();
@@ -500,6 +630,8 @@ class _HomePageState extends State<HomePage> {
       medicine.time.minute,
     );
     final isPast = scheduledTime.isBefore(now);
+    final isTaken = await _isMedicineTakenToday(medicine.name);
+    final showMissed = isPast && !isTaken;
 
     showDialog(
       context: context,
@@ -526,14 +658,6 @@ class _HomePageState extends State<HomePage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _buildActionButton(
-                      icon: Icons.info_outline,
-                      label: '',
-                      color: cs.onSurface.withOpacity(0.6),
-                      onTap: () {
-                        // TODO: Show info
-                      },
-                    ),
                     _buildActionButton(
                       icon: Icons.delete_outline,
                       label: '',
@@ -595,7 +719,7 @@ class _HomePageState extends State<HomePage> {
                             color: cs.primary,
                           ),
                         ),
-                        if (isPast)
+                        if (showMissed)
                           Container(
                             padding: const EdgeInsets.all(6),
                             decoration: BoxDecoration(
@@ -605,6 +729,20 @@ class _HomePageState extends State<HomePage> {
                             ),
                             child: const Icon(
                               Icons.error_outline,
+                              color: Colors.white,
+                              size: 16,
+                            ),
+                          )
+                        else if (isTaken)
+                          Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: Colors.green,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: cs.surface, width: 2),
+                            ),
+                            child: const Icon(
+                              Icons.check_circle,
                               color: Colors.white,
                               size: 16,
                             ),
@@ -621,7 +759,7 @@ class _HomePageState extends State<HomePage> {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 8),
-                    if (isPast)
+                    if (showMissed)
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 16,
@@ -635,6 +773,24 @@ class _HomePageState extends State<HomePage> {
                           'Missed',
                           style: textTheme.titleMedium?.copyWith(
                             color: Colors.red,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      )
+                    else if (isTaken)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.green.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          'Completed',
+                          style: textTheme.titleMedium?.copyWith(
+                            color: Colors.green,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -679,8 +835,37 @@ class _HomePageState extends State<HomePage> {
                         label: 'SKIP',
                         color: cs.onSurface.withOpacity(0.6),
                         backgroundColor: cs.surfaceContainerHighest,
-                        onTap: () {
+                        onTap: () async {
                           Navigator.pop(context);
+
+                          // Record missed activity
+                          final activity = MedicineActivity(
+                            id: DateTime.now().millisecondsSinceEpoch
+                                .toString(),
+                            medicineName: medicine.name,
+                            medicineForm: medicine.form,
+                            action: 'missed',
+                            timestamp: DateTime.now(),
+                          );
+                          await ActivityService.recordActivity(activity);
+
+                          // Notify progress page to update
+                          ProgressNotifier().notifyProgressUpdate();
+
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  '${medicine.name} marked as missed',
+                                ),
+                                backgroundColor: Colors.orange,
+                                behavior: SnackBarBehavior.floating,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            );
+                          }
                         },
                       ),
                     ),
@@ -727,6 +912,12 @@ class _HomePageState extends State<HomePage> {
                           await MedicineService.updateMedicine(updatedMedicine);
                           _loadMedicines();
 
+                          // Send low stock notification if quantity is less than 5
+                          if (newQuantity > 0 && newQuantity < 5) {
+                            await NotificationService()
+                                .showLowStockNotification(updatedMedicine);
+                          }
+
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
@@ -760,9 +951,9 @@ class _HomePageState extends State<HomePage> {
                         label: 'RESCHEDULE',
                         color: cs.onSurface.withOpacity(0.6),
                         backgroundColor: cs.surfaceContainerHighest,
-                        onTap: () {
+                        onTap: () async {
                           Navigator.pop(context);
-                          // TODO: Implement reschedule
+                          await _showRescheduleDialog(medicine);
                         },
                       ),
                     ),
@@ -848,5 +1039,60 @@ class _HomePageState extends State<HomePage> {
         ),
       ],
     );
+  }
+
+  Future<void> _showRescheduleDialog(Medicine medicine) async {
+    final cs = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    final TimeOfDay? pickedTime = await showTimePicker(
+      context: context,
+      initialTime: medicine.time,
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: cs.primary,
+              onPrimary: cs.onPrimary,
+              surface: cs.surface,
+              onSurface: cs.onSurface,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (pickedTime != null && mounted) {
+      final updatedMedicine = Medicine(
+        id: medicine.id,
+        name: medicine.name,
+        form: medicine.form,
+        frequency: medicine.frequency,
+        dailyFrequency: medicine.dailyFrequency,
+        time: pickedTime,
+        dosage: medicine.dosage,
+        createdAt: medicine.createdAt,
+        quantity: medicine.quantity,
+      );
+
+      await MedicineService.updateMedicine(updatedMedicine);
+      _loadMedicines();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '${medicine.name} rescheduled to ${pickedTime.format(context)}',
+            ),
+            backgroundColor: cs.primary,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        );
+      }
+    }
   }
 }

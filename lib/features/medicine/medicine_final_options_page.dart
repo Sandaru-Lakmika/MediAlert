@@ -27,29 +27,47 @@ class MedicineFinalOptionsPage extends StatefulWidget {
       _MedicineFinalOptionsPageState();
 }
 
-class _MedicineFinalOptionsPageState extends State<MedicineFinalOptionsPage> {
-  final List<Map<String, dynamic>> _options = [
-    {
-      'title': 'Set treatment duration?',
-      'icon': Icons.event_outlined,
-      'selected': false,
-    },
-    {
-      'title': 'Get refill reminders?',
-      'icon': Icons.notifications_active_outlined,
-      'selected': false,
-    },
-    {
-      'title': 'Add instructions?',
-      'icon': Icons.info_outline,
-      'selected': false,
-    },
-    {
-      'title': 'Change the med icon?',
-      'icon': Icons.edit_outlined,
-      'selected': false,
-    },
-  ];
+class _MedicineFinalOptionsPageState extends State<MedicineFinalOptionsPage>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    );
+
+    _scaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: const Interval(0.0, 0.6, curve: Curves.elasticOut),
+      ),
+    );
+
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: const Interval(0.3, 0.8, curve: Curves.easeIn),
+      ),
+    );
+
+    _animationController.forward();
+
+    // Auto-save after animation completes
+    Future.delayed(const Duration(milliseconds: 2000), () {
+      _handleSave();
+    });
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
 
   Future<void> _handleSave() async {
     // Create medicine object (use existing ID if editing, otherwise create new)
@@ -151,146 +169,109 @@ class _MedicineFinalOptionsPageState extends State<MedicineFinalOptionsPage> {
               ),
 
               Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(24),
+                child: Center(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const SizedBox(height: 20),
-
-                      // Icon Container
-                      Center(
+                      // Animated Success Icon
+                      ScaleTransition(
+                        scale: _scaleAnimation,
                         child: Container(
-                          padding: const EdgeInsets.all(24),
+                          padding: const EdgeInsets.all(32),
                           decoration: BoxDecoration(
+                            shape: BoxShape.circle,
                             gradient: LinearGradient(
                               colors: [cs.primary, cs.primary.withOpacity(0.8)],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
-                            borderRadius: BorderRadius.circular(24),
                             boxShadow: [
                               BoxShadow(
-                                color: cs.primary.withOpacity(0.3),
-                                blurRadius: 20,
-                                offset: const Offset(0, 8),
+                                color: cs.primary.withOpacity(0.4),
+                                blurRadius: 30,
+                                offset: const Offset(0, 10),
                               ),
                             ],
                           ),
                           child: const Icon(
-                            Icons.medication_outlined,
-                            size: 56,
+                            Icons.check_rounded,
+                            size: 80,
                             color: Colors.white,
                           ),
                         ),
                       ),
 
-                      const SizedBox(height: 32),
-
-                      // Title
-                      Text(
-                        widget.medicineName,
-                        style: textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: cs.onSurface,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-
                       const SizedBox(height: 40),
 
-                      // Options Container
-                      Container(
-                        padding: const EdgeInsets.all(24),
-                        decoration: BoxDecoration(
-                          color: Colors.black87,
-                          borderRadius: BorderRadius.circular(24),
-                          boxShadow: [
-                            BoxShadow(
-                              color: cs.primary.withOpacity(0.15),
-                              blurRadius: 20,
-                              offset: const Offset(0, 8),
-                            ),
-                          ],
-                        ),
+                      // Success Message
+                      FadeTransition(
+                        opacity: _fadeAnimation,
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Almost done. Would you like to:',
+                              'Success!',
+                              style: textTheme.headlineMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: cs.onSurface,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              '${widget.medicineName} added successfully',
                               style: textTheme.titleMedium?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
+                                color: cs.onSurface.withOpacity(0.7),
                               ),
+                              textAlign: TextAlign.center,
                             ),
-                            const SizedBox(height: 24),
-
-                            // Options List
-                            ..._options.map((option) {
-                              return Column(
-                                children: [
-                                  _buildOptionItem(
-                                    title: option['title'],
-                                    icon: option['icon'],
+                            const SizedBox(height: 32),
+                            // Medicine Details Card
+                            Container(
+                              margin: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                              ),
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(20),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: cs.primary.withOpacity(0.1),
+                                    blurRadius: 20,
+                                    offset: const Offset(0, 8),
                                   ),
-                                  if (_options.indexOf(option) !=
-                                      _options.length - 1)
-                                    Divider(
-                                      color: Colors.white.withOpacity(0.1),
-                                      height: 32,
-                                    ),
                                 ],
-                              );
-                            }).toList(),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 60),
-
-                      // Save Button
-                      Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: cs.primary.withOpacity(0.3),
-                              blurRadius: 12,
-                              offset: const Offset(0, 6),
+                              ),
+                              child: Column(
+                                children: [
+                                  _buildDetailRow(
+                                    Icons.medication_outlined,
+                                    'Medicine',
+                                    widget.medicineName,
+                                    cs,
+                                    textTheme,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  _buildDetailRow(
+                                    Icons.access_time_outlined,
+                                    'Frequency',
+                                    widget.dailyFrequency,
+                                    cs,
+                                    textTheme,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  _buildDetailRow(
+                                    Icons.local_hospital_outlined,
+                                    'Dosage',
+                                    '${widget.dosage} Pill(s)',
+                                    cs,
+                                    textTheme,
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
                         ),
-                        child: FilledButton(
-                          onPressed: _handleSave,
-                          style: FilledButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 18),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            backgroundColor: cs.primary,
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                'Save',
-                                style: textTheme.titleMedium?.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              const Icon(
-                                Icons.check,
-                                color: Colors.white,
-                                size: 20,
-                              ),
-                            ],
-                          ),
-                        ),
                       ),
-
-                      const SizedBox(height: 40),
                     ],
                   ),
                 ),
@@ -302,52 +283,46 @@ class _MedicineFinalOptionsPageState extends State<MedicineFinalOptionsPage> {
     );
   }
 
-  Widget _buildOptionItem({required String title, required IconData icon}) {
-    final cs = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    return InkWell(
-      onTap: () {
-        // Handle option tap
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('$title feature coming soon!'),
-            backgroundColor: cs.primary,
-            behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 1),
+  Widget _buildDetailRow(
+    IconData icon,
+    String label,
+    String value,
+    ColorScheme cs,
+    TextTheme textTheme,
+  ) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: cs.primaryContainer.withOpacity(0.3),
+            borderRadius: BorderRadius.circular(10),
           ),
-        );
-      },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: cs.primary.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: cs.primary, size: 24),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Text(
-                title,
-                style: textTheme.titleMedium?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w500,
+          child: Icon(icon, color: cs.primary, size: 20),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: textTheme.bodySmall?.copyWith(
+                  color: cs.onSurface.withOpacity(0.6),
                 ),
               ),
-            ),
-            Icon(
-              Icons.arrow_forward_ios,
-              color: Colors.white.withOpacity(0.5),
-              size: 16,
-            ),
-          ],
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: cs.onSurface,
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
+      ],
     );
   }
 }
