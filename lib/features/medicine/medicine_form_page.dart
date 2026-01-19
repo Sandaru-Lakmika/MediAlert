@@ -29,11 +29,8 @@ class _MedicineFormPageState extends State<MedicineFormPage> {
 
   final List<Map<String, dynamic>> _forms = [
     {'name': 'Pill', 'icon': Icons.medication_outlined},
-    {'name': 'Injection', 'icon': Icons.vaccines_outlined},
     {'name': 'Solution (liquid)', 'icon': Icons.local_drink_outlined},
     {'name': 'Drops', 'icon': Icons.water_drop_outlined},
-    {'name': 'Inhaler', 'icon': Icons.air_outlined},
-    {'name': 'Powder', 'icon': Icons.grain_outlined},
     {'name': 'Other', 'icon': Icons.more_horiz_outlined},
   ];
 
