@@ -7,6 +7,7 @@ import 'features/welcome/goals_page.dart';
 import 'features/medicine/add_medicine_page.dart';
 import 'home/home_page.dart';
 import 'models/medicine.dart';
+import 'services/notification_service.dart';
 
 //i am sandaru
 //NO excuses in professional life just do it
@@ -17,8 +18,16 @@ import 'models/medicine.dart';
 //test 2
 //test 3
 //test 4
-void main() {
+
+// Global key to access navigator from notification handler
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize notification service
+  await NotificationService().initialize();
+  
   runApp(const MediReminderApp());
 }
 
@@ -29,6 +38,7 @@ class MediReminderApp extends StatelessWidget {
   Widget build(BuildContext context) {
     const seed = Color(0xFF2196F3); // vibrant medical blue
     return MaterialApp(
+      navigatorKey: navigatorKey,
       title: 'Medicine Reminder',
       debugShowCheckedModeBanner: false,
       themeMode: ThemeMode.system,
