@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/user_data.dart';
 import 'edit_profile_page.dart';
+import 'account_page.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -80,7 +81,12 @@ class SettingsPage extends StatelessWidget {
                       cs: cs,
                       textTheme: textTheme,
                       onTap: () {
-                        // TODO: Account details
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const AccountPage(),
+                          ),
+                        );
                       },
                     ),
 
